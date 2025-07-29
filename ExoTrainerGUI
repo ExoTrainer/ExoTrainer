@@ -1,96 +1,139 @@
--- ExoTrainer with Key System
-local KEY = "90120" -- Change this to any key you want
+-- ExoTrainer Loader with Key System
+local KEY = "90120" -- The access key
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local Lighting = game:GetService("Lighting")
 
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "ExoTrainerLoader"
-gui.ResetOnSpawn = false
+-- Clean up any old GUI
+if game.CoreGui:FindFirstChild("ExoTrainerKeyUI") then
+    game.CoreGui.ExoTrainerKeyUI:Destroy()
+end
 
-local blur = Instance.new("BlurEffect", Lighting)
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ExoTrainerKeyUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game:GetService("CoreGui")
+
+-- Blur background
+local blur = Instance.new("BlurEffect")
 blur.Size = 24
+blur.Parent = Lighting
 
-local keyFrame = Instance.new("Frame", gui)
-keyFrame.Size = UDim2.new(0, 300, 0, 150)
-keyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
-keyFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-keyFrame.BorderSizePixel = 0
-keyFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+-- Create main frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 320, 0, 170)
+frame.Position = UDim2.new(0.5, -160, 0.5, -85)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.AnchorPoint = Vector2.new(0.5, 0.5)
+frame.Parent = screenGui
 
-local uiCorner = Instance.new("UICorner", keyFrame)
-uiCorner.CornerRadius = UDim.new(0, 10)
+local uicorner = Instance.new("UICorner")
+uicorner.CornerRadius = UDim.new(0, 12)
+uicorner.Parent = frame
 
-local title = Instance.new("TextLabel", keyFrame)
-title.Size = UDim2.new(1, 0, 0, 40)
+-- Title label
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 45)
 title.BackgroundTransparency = 1
-title.Text = "🔐 Enter Key to Unlock"
+title.Text = "🔐 Enter Key to Access ExoTrainer"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 18
+title.TextSize = 20
+title.Parent = frame
 
-local inputBox = Instance.new("TextBox", keyFrame)
-inputBox.Size = UDim2.new(0.8, 0, 0, 35)
-inputBox.Position = UDim2.new(0.5, 0, 0.5, -10)
-inputBox.AnchorPoint = Vector2.new(0.5, 0.5)
-inputBox.PlaceholderText = "Enter your key..."
-inputBox.Text = ""
-inputBox.TextColor3 = Color3.new(1, 1, 1)
+-- TextBox for input
+local inputBox = Instance.new("TextBox")
+inputBox.Size = UDim2.new(0.8, 0, 0, 40)
+inputBox.Position = UDim2.new(0.1, 0, 0.4, 0)
 inputBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+inputBox.PlaceholderText = "Enter your key here"
 inputBox.Font = Enum.Font.Gotham
-inputBox.TextSize = 16
+inputBox.TextSize = 18
+inputBox.ClearTextOnFocus = false
+inputBox.Parent = frame
 
-local boxCorner = Instance.new("UICorner", inputBox)
-boxCorner.CornerRadius = UDim.new(0, 8)
+local inputCorner = Instance.new("UICorner")
+inputCorner.CornerRadius = UDim.new(0, 8)
+inputCorner.Parent = inputBox
 
-local submit = Instance.new("TextButton", keyFrame)
-submit.Size = UDim2.new(0.8, 0, 0, 30)
-submit.Position = UDim2.new(0.5, 0, 1, -40)
-submit.AnchorPoint = Vector2.new(0.5, 1)
-submit.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-submit.Text = "Submit"
-submit.TextColor3 = Color3.new(1, 1, 1)
-submit.Font = Enum.Font.GothamBold
-submit.TextSize = 16
+-- Status label (for errors)
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, 0, 0, 25)
+statusLabel.Position = UDim2.new(0, 0, 0.75, 0)
+statusLabel.BackgroundTransparency = 1
+statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 16
+statusLabel.Text = ""
+statusLabel.Parent = frame
 
-local submitCorner = Instance.new("UICorner", submit)
-submitCorner.CornerRadius = UDim.new(0, 6)
+-- Submit button
+local submitButton = Instance.new("TextButton")
+submitButton.Size = UDim2.new(0.6, 0, 0, 40)
+submitButton.Position = UDim2.new(0.2, 0, 0.85, 0)
+submitButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+submitButton.Font = Enum.Font.GothamBold
+submitButton.TextSize = 20
+submitButton.Text = "Submit"
+submitButton.AutoButtonColor = true
+submitButton.Parent = frame
 
-local errorMsg = Instance.new("TextLabel", keyFrame)
-errorMsg.Size = UDim2.new(1, 0, 0, 20)
-errorMsg.Position = UDim2.new(0, 0, 1, -20)
-errorMsg.BackgroundTransparency = 1
-errorMsg.Text = ""
-errorMsg.TextColor3 = Color3.fromRGB(255, 75, 75)
-errorMsg.Font = Enum.Font.Gotham
-errorMsg.TextSize = 14
+local submitCorner = Instance.new("UICorner")
+submitCorner.CornerRadius = UDim.new(0, 10)
+submitCorner.Parent = submitButton
 
+-- URL of your GitHub raw script
+local trainerScriptURL = "https://raw.githubusercontent.com/ExoTrainer/ExoTrainer/main/ExoTrainerGUI"
+
+-- Function to load trainer
 local function loadTrainer()
-    local rawURL = "https://raw.githubusercontent.com/ExoTrainer/ExoTrainer/main/ExoTrainerGUI"
-    local success, result = pcall(function()
-        return game:HttpGet(rawURL)
+    print("[ExoTrainer] Loading trainer script...")
+    local success, response = pcall(function()
+        return game:HttpGet(trainerScriptURL)
     end)
-    if success and result then
-        local funcSuccess, funcError = pcall(function()
-            loadstring(result)()
-        end)
-        if not funcSuccess then
-            errorMsg.Text = "❌ Failed to run trainer script: "..tostring(funcError)
-        end
+
+    if not success or not response or response == "" then
+        statusLabel.Text = "❌ Failed to download trainer script."
+        print("[ExoTrainer] Failed to download trainer script.")
+        return
+    end
+
+    local loadSuccess, err = pcall(function()
+        loadstring(response)()
+    end)
+
+    if not loadSuccess then
+        statusLabel.Text = "❌ Failed to execute trainer script."
+        warn("[ExoTrainer] Failed to execute trainer script:", err)
     else
-        errorMsg.Text = "❌ Failed to load trainer script from URL."
+        print("[ExoTrainer] Trainer loaded successfully.")
     end
 end
 
-submit.MouseButton1Click:Connect(function()
-    if inputBox.Text == KEY then
-        errorMsg.Text = ""
-        gui:Destroy()
+-- Submit button click handler
+submitButton.MouseButton1Click:Connect(function()
+    local enteredKey = inputBox.Text
+    print("[ExoTrainer] Key entered:", enteredKey)
+
+    if enteredKey == KEY then
+        statusLabel.Text = "✅ Key accepted! Loading trainer..."
+        wait(0.5)
+        screenGui:Destroy()
         blur:Destroy()
-        wait(0.2) -- short wait to ensure UI cleanup
         loadTrainer()
     else
-        errorMsg.Text = "❌ Invalid key. Try again."
+        statusLabel.Text = "❌ Invalid key. Please try again."
+    end
+end)
+
+-- Optional: allow pressing Enter to submit
+inputBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        submitButton.MouseButton1Click:Fire()
     end
 end)
