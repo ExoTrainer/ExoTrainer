@@ -1,268 +1,443 @@
+--// Services
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+
 local player = Players.LocalPlayer
+local mouse = player:GetMouse()
 
-local correctKey = "90120"
-local guiVisible = true
-local unlocked = false
+--// Key to access
+local ACCESS_KEY = "90120"
 
--- Remove existing GUI if present
+--// Remove existing GUI if any
 if player.PlayerGui:FindFirstChild("ExoTrainer") then
     player.PlayerGui.ExoTrainer:Destroy()
 end
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "ExoTrainer"
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+--// Key Input GUI
+local keyGui = Instance.new("ScreenGui")
+keyGui.Name = "ExoTrainerKeyGui"
+keyGui.ResetOnSpawn = false
+keyGui.Parent = player:WaitForChild("PlayerGui")
 
--- Key GUI Frame
 local keyFrame = Instance.new("Frame")
-keyFrame.Name = "KeyFrame"
-keyFrame.Size = UDim2.new(0, 400, 0, 200)
-keyFrame.Position = UDim2.new(0.5, -200, 0.5, -100)
-keyFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-keyFrame.BackgroundTransparency = 0.15
+keyFrame.Size = UDim2.new(0, 350, 0, 150)
+keyFrame.Position = UDim2.new(0.5, -175, 0.5, -75)
+keyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 keyFrame.BorderSizePixel = 0
+keyFrame.Parent = keyGui
 keyFrame.Active = true
 keyFrame.Draggable = true
-keyFrame.Parent = gui
 
 local keyCorner = Instance.new("UICorner")
 keyCorner.CornerRadius = UDim.new(0, 15)
 keyCorner.Parent = keyFrame
 
-local keyTitle = Instance.new("TextLabel")
-keyTitle.Name = "KeyTitle"
-keyTitle.Text = "Enter Key to Access"
-keyTitle.Font = Enum.Font.GothamBold
-keyTitle.TextSize = 28
-keyTitle.TextColor3 = Color3.fromRGB(150, 0, 0)
-keyTitle.BackgroundTransparency = 1
-keyTitle.Size = UDim2.new(1, 0, 0, 50)
-keyTitle.Position = UDim2.new(0, 0, 0, 10)
-keyTitle.Parent = keyFrame
+local keyLabel = Instance.new("TextLabel")
+keyLabel.Text = "Enter Access Key"
+keyLabel.Font = Enum.Font.GothamBold
+keyLabel.TextSize = 24
+keyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyLabel.BackgroundTransparency = 1
+keyLabel.Size = UDim2.new(1, 0, 0, 50)
+keyLabel.Position = UDim2.new(0, 0, 0, 10)
+keyLabel.Parent = keyFrame
 
 local keyBox = Instance.new("TextBox")
-keyBox.Name = "KeyBox"
-keyBox.PlaceholderText = "Enter key here..."
-keyBox.Text = ""
-keyBox.ClearTextOnFocus = false
+keyBox.PlaceholderText = "Enter key here"
 keyBox.Font = Enum.Font.Gotham
 keyBox.TextSize = 22
-keyBox.TextColor3 = Color3.fromRGB(200, 0, 0)
-keyBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-keyBox.Size = UDim2.new(0.9, 0, 0, 50)
-keyBox.Position = UDim2.new(0.05, 0, 0, 70)
+keyBox.TextColor3 = Color3.fromRGB(230, 230, 230)
+keyBox.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+keyBox.BorderSizePixel = 0
+keyBox.Size = UDim2.new(1, -40, 0, 40)
+keyBox.Position = UDim2.new(0, 20, 0, 65)
+keyBox.ClearTextOnFocus = false
 keyBox.Parent = keyFrame
 
-local submitBtn = Instance.new("TextButton")
-submitBtn.Name = "SubmitBtn"
-submitBtn.Text = "Submit"
-submitBtn.Font = Enum.Font.GothamBold
-submitBtn.TextSize = 22
-submitBtn.TextColor3 = Color3.fromRGB(150, 0, 0)
-submitBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-submitBtn.Size = UDim2.new(0.9, 0, 0, 40)
-submitBtn.Position = UDim2.new(0.05, 0, 0, 130)
-submitBtn.BorderSizePixel = 0
-submitBtn.Parent = keyFrame
+local keyBtn = Instance.new("TextButton")
+keyBtn.Text = "Submit"
+keyBtn.Font = Enum.Font.GothamBold
+keyBtn.TextSize = 22
+keyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+keyBtn.BorderSizePixel = 0
+keyBtn.Size = UDim2.new(0, 100, 0, 40)
+keyBtn.Position = UDim2.new(1, -120, 1, -50)
+keyBtn.Parent = keyFrame
 
-local submitCorner = Instance.new("UICorner")
-submitCorner.CornerRadius = UDim.new(0, 12)
-submitCorner.Parent = submitBtn
+local keyBtnCorner = Instance.new("UICorner")
+keyBtnCorner.CornerRadius = UDim.new(0, 12)
+keyBtnCorner.Parent = keyBtn
 
-submitBtn.MouseEnter:Connect(function()
-    TweenService:Create(submitBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(200, 0, 0)}):Play()
-end)
-submitBtn.MouseLeave:Connect(function()
-    TweenService:Create(submitBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
-end)
+-- Error label for wrong key
+local errorLabel = Instance.new("TextLabel")
+errorLabel.Text = ""
+errorLabel.Font = Enum.Font.Gotham
+errorLabel.TextSize = 18
+errorLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+errorLabel.BackgroundTransparency = 1
+errorLabel.Size = UDim2.new(1, 0, 0, 25)
+errorLabel.Position = UDim2.new(0, 0, 1, -20)
+errorLabel.Parent = keyFrame
 
--- Main Frame (same as your original)
-local main = Instance.new("Frame")
-main.Name = "MainFrame"
-main.Size = UDim2.new(0, 700, 0, 800)
-main.Position = UDim2.new(0, 20, 0, 20)
-main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-main.BackgroundTransparency = 0.15
-main.BorderSizePixel = 0
-main.Active = true
-main.Draggable = true
-main.Visible = false
-main.Parent = gui
-
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 15)
-mainCorner.Parent = main
-
-local mainShadow = Instance.new("UIStroke")
-mainShadow.Color = Color3.fromRGB(0, 0, 0)
-mainShadow.Thickness = 2
-mainShadow.Transparency = 0.7
-mainShadow.Parent = main
-
--- TopBar Frame (Title + Close)
-local topBar = Instance.new("Frame")
-topBar.Name = "TopBar"
-topBar.Size = UDim2.new(1, 0, 0, 40)
-topBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-topBar.BackgroundTransparency = 0.1
-topBar.BorderSizePixel = 0
-topBar.Parent = main
-
-local topBarCorner = Instance.new("UICorner")
-topBarCorner.CornerRadius = UDim.new(0, 15)
-topBarCorner.Parent = topBar
-
--- Title Label
-local title = Instance.new("TextLabel")
-title.Name = "Title"
-title.Text = "ExoTrainer"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 24
-title.TextColor3 = Color3.new(1, 1, 1)
-title.BackgroundTransparency = 1
-title.Size = UDim2.new(1, -100, 1, 0)
-title.Position = UDim2.new(0, 20, 0, 0)
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = topBar
-
--- Close Button
-local closeBtn = Instance.new("TextButton")
-closeBtn.Name = "CloseButton"
-closeBtn.Text = "X"
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 24
-closeBtn.TextColor3 = Color3.fromRGB(220, 60, 60)
-closeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-closeBtn.BorderSizePixel = 0
-closeBtn.Size = UDim2.new(0, 60, 1, 0)
-closeBtn.Position = UDim2.new(1, -80, 0, 0)
-closeBtn.Parent = topBar
-
-local closeBtnCorner = Instance.new("UICorner")
-closeBtnCorner.CornerRadius = UDim.new(0, 10)
-closeBtnCorner.Parent = closeBtn
-
-closeBtn.MouseEnter:Connect(function()
-    TweenService:Create(closeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(220, 80, 80)}):Play()
-end)
-closeBtn.MouseLeave:Connect(function()
-    TweenService:Create(closeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
-end)
-
-closeBtn.MouseButton1Click:Connect(function()
-    gui:Destroy()
-end)
-
--- Tab Buttons Frame
-local tabButtons = Instance.new("Frame")
-tabButtons.Name = "TabButtons"
-tabButtons.Size = UDim2.new(1, 0, 0, 40)
-tabButtons.Position = UDim2.new(0, 0, 0, 40)
-tabButtons.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-tabButtons.BackgroundTransparency = 0.1
-tabButtons.BorderSizePixel = 0
-tabButtons.Parent = main
-
-local tabButtonsCorner = Instance.new("UICorner")
-tabButtonsCorner.CornerRadius = UDim.new(0, 15)
-tabButtonsCorner.Parent = tabButtons
-
-local tabs = {"Aimbot", "Visuals", "Rage", "Players", "Other"}
-local pages = {}
-
-local function styleButton(button)
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 10)
-    corner.Parent = button
-
-    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    button.TextColor3 = Color3.new(1,1,1)
-    button.Font = Enum.Font.GothamBold
-    button.TextSize = 18
-    button.BorderSizePixel = 0
-
-    button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 120, 200)}):Play()
-    end)
-    button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
-    end)
+--// Wait for key press submit or enter in box
+local function tryAccess()
+    if keyBox.Text == ACCESS_KEY then
+        -- Correct key, remove key GUI and load main GUI
+        keyGui:Destroy()
+        loadMainGUI()
+    else
+        errorLabel.Text = "Invalid key! Try again."
+        wait(2)
+        errorLabel.Text = ""
+        keyBox.Text = ""
+    end
 end
 
--- Create tab buttons & pages
-for i, tabName in ipairs(tabs) do
-    local tabBtn = Instance.new("TextButton")
-    tabBtn.Name = tabName .. "Tab"
-    tabBtn.Text = tabName
-    tabBtn.Size = UDim2.new(0, 130, 1, 0)
-    tabBtn.Position = UDim2.new(0, (i-1) * 130, 0, 0)
-    tabBtn.Parent = tabButtons
+keyBtn.MouseButton1Click:Connect(tryAccess)
+keyBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        tryAccess()
+    end
+end)
 
-    styleButton(tabBtn)
+--// Main GUI loader function
+function loadMainGUI()
+    -- Remove existing GUI if any
+    if player.PlayerGui:FindFirstChild("ExoTrainer") then
+        player.PlayerGui.ExoTrainer:Destroy()
+    end
 
-    -- Create the page frame for each tab
-    local page = Instance.new("Frame")
-    page.Name = tabName .. "Page"
-    page.Size = UDim2.new(1, 0, 1, -80) -- under topBar+tabButtons (40+40)
-    page.Position = UDim2.new(0, 0, 0, 80)
-    page.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
-    page.BackgroundTransparency = 0.1
-    page.BorderSizePixel = 0
-    page.Visible = false
-    page.Parent = main
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "ExoTrainer"
+    gui.ResetOnSpawn = false
+    gui.Parent = player:WaitForChild("PlayerGui")
 
-    local pageCorner = Instance.new("UICorner")
-    pageCorner.CornerRadius = UDim.new(0, 15)
-    pageCorner.Parent = page
+    -- Main Frame
+    local main = Instance.new("Frame")
+    main.Name = "MainFrame"
+    main.Size = UDim2.new(0, 700, 0, 800)
+    main.Position = UDim2.new(0, 20, 0, 20)
+    main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    main.BorderSizePixel = 0
+    main.Active = true
+    main.Draggable = true
+    main.Parent = gui
 
-    pages[tabName] = page
+    local mainCorner = Instance.new("UICorner")
+    mainCorner.CornerRadius = UDim.new(0, 15)
+    mainCorner.Parent = main
 
-    tabBtn.MouseButton1Click:Connect(function()
-        for _, p in pairs(pages) do
-            p.Visible = false
-        end
-        page.Visible = true
+    local mainStroke = Instance.new("UIStroke")
+    mainStroke.Color = Color3.fromRGB(0, 0, 0)
+    mainStroke.Thickness = 2
+    mainStroke.Parent = main
 
-        for _, btn in pairs(tabButtons:GetChildren()) do
-            if btn:IsA("TextButton") then
-                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+    -- TopBar Frame (Title + Close)
+    local topBar = Instance.new("Frame")
+    topBar.Name = "TopBar"
+    topBar.Size = UDim2.new(1, 0, 0, 40)
+    topBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    topBar.BorderSizePixel = 0
+    topBar.Parent = main
+
+    local topBarCorner = Instance.new("UICorner")
+    topBarCorner.CornerRadius = UDim.new(0, 15)
+    topBarCorner.Parent = topBar
+
+    -- Title Label (Left corner)
+    local title = Instance.new("TextLabel")
+    title.Name = "Title"
+    title.Text = "ExoTrainer"
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 24
+    title.TextColor3 = Color3.fromRGB(140, 0, 0) -- dark red
+    title.BackgroundTransparency = 1
+    title.Size = UDim2.new(1, -100, 1, 0)
+    title.Position = UDim2.new(0, 20, 0, 0)
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = topBar
+
+    -- Close Button
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Name = "CloseButton"
+    closeBtn.Text = "X"
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.TextSize = 24
+    closeBtn.TextColor3 = Color3.fromRGB(180, 0, 0) -- dark red
+    closeBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 10) -- really black
+    closeBtn.BorderSizePixel = 0
+    closeBtn.Size = UDim2.new(0, 60, 1, 0)
+    closeBtn.Position = UDim2.new(1, -80, 0, 0)
+    closeBtn.Parent = topBar
+
+    local closeBtnCorner = Instance.new("UICorner")
+    closeBtnCorner.CornerRadius = UDim.new(0, 10)
+    closeBtnCorner.Parent = closeBtn
+
+    -- Close button hover tween
+    closeBtn.MouseEnter:Connect(function()
+        TweenService:Create(closeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 0, 0)}):Play()
+    end)
+    closeBtn.MouseLeave:Connect(function()
+        TweenService:Create(closeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(10, 10, 10)}):Play()
+    end)
+
+    closeBtn.MouseButton1Click:Connect(function()
+        gui:Destroy()
+    end)
+
+    -- Tab Buttons Frame
+    local tabButtons = Instance.new("Frame")
+    tabButtons.Name = "TabButtons"
+    tabButtons.Size = UDim2.new(1, 0, 0, 40)
+    tabButtons.Position = UDim2.new(0, 0, 0, 40)
+    tabButtons.BackgroundColor3 = Color3.fromRGB(15, 15, 15) -- dark grey
+    tabButtons.BorderSizePixel = 0
+    tabButtons.Parent = main
+
+    local tabButtonsCorner = Instance.new("UICorner")
+    tabButtonsCorner.CornerRadius = UDim.new(0, 15)
+    tabButtonsCorner.Parent = tabButtons
+
+    local tabs = {"Aimbot", "Visuals", "Rage", "Players", "Other"}
+    local pages = {}
+
+    -- Button styling helper
+    local function styleButton(button)
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 10)
+        corner.Parent = button
+
+        button.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        button.TextColor3 = Color3.fromRGB(140, 0, 0) -- dark red
+        button.Font = Enum.Font.GothamBold
+        button.TextSize = 18
+        button.BorderSizePixel = 0
+
+        button.MouseEnter:Connect(function()
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+        end)
+        button.MouseLeave:Connect(function()
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 20, 20)}):Play()
+        end)
+    end
+
+    -- Create tab buttons & pages
+    for i, tabName in ipairs(tabs) do
+        local tabBtn = Instance.new("TextButton")
+        tabBtn.Name = tabName .. "Tab"
+        tabBtn.Text = tabName
+        tabBtn.Size = UDim2.new(0, 130, 1, 0)
+        tabBtn.Position = UDim2.new(0, (i - 1) * 130, 0, 0)
+        tabBtn.Parent = tabButtons
+
+        styleButton(tabBtn)
+
+        -- Create the page frame for each tab
+        local page = Instance.new("Frame")
+        page.Name = tabName .. "Page"
+        page.Size = UDim2.new(1, 0, 1, -80) -- below topBar + tabButtons (40 + 40)
+        page.Position = UDim2.new(0, 0, 0, 80)
+        page.BackgroundColor3 = Color3.fromRGB(10, 10, 10) -- blackish inside
+        page.BorderSizePixel = 0
+        page.Visible = false
+        page.Parent = main
+
+        local pageCorner = Instance.new("UICorner")
+        pageCorner.CornerRadius = UDim.new(0, 15)
+        pageCorner.Parent = page
+
+        pages[tabName] = page
+
+        tabBtn.MouseButton1Click:Connect(function()
+            for _, p in pairs(pages) do
+                p.Visible = false
+            end
+            page.Visible = true
+
+            for _, btn in pairs(tabButtons:GetChildren()) do
+                if btn:IsA("TextButton") then
+                    TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 20, 20)}):Play()
+                end
+            end
+            TweenService:Create(tabBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+        end)
+    end
+
+    -- Show first tab by default and highlight it
+    pages["Aimbot"].Visible = true
+    local firstTab = tabButtons:FindFirstChild("AimbotTab")
+    if firstTab then
+        TweenService:Create(firstTab, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+    end
+
+    --// ESP Variables & Helpers
+
+    local espSettings = {
+        HighlightESP = false,
+        HealthESP = false,
+        SkeletonESP = false,
+    }
+
+    -- HighlightESP functions
+    local function toggleHighlightESP(state)
+        if state then
+            for _, plr in pairs(Players:GetPlayers()) do
+                if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                    if not plr.Character:FindFirstChild("Highlight") then
+                        local highlight = Instance.new("Highlight")
+                        highlight.Name = "Highlight"
+                        highlight.FillColor = Color3.fromRGB(0, 255, 0)
+                        highlight.OutlineColor = Color3.fromRGB(0, 150, 0)
+                        highlight.Parent = plr.Character
+                    end
+                end
+            end
+        else
+            for _, plr in pairs(Players:GetPlayers()) do
+                if plr ~= player and plr.Character then
+                    local highlight = plr.Character:FindFirstChild("Highlight")
+                    if highlight then
+                        highlight:Destroy()
+                    end
+                end
             end
         end
-        TweenService:Create(tabBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 120, 200)}):Play()
+    end
+
+    -- HealthESP functions
+    local function createHealthBillboard(plr)
+        if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+            if not plr.Character:FindFirstChild("HealthBillboard") then
+                local billboard = Instance.new("BillboardGui")
+                billboard.Name = "HealthBillboard"
+                billboard.Adornee = plr.Character.HumanoidRootPart or plr.Character:FindFirstChildWhichIsA("BasePart")
+                billboard.Size = UDim2.new(0, 80, 0, 20)
+                billboard.StudsOffset = Vector3.new(0, 3, 0)
+                billboard.AlwaysOnTop = true
+                billboard.Parent = plr.Character
+
+                local text = Instance.new("TextLabel")
+                text.Name = "HealthText"
+                text.Size = UDim2.new(1, 0, 1, 0)
+                text.BackgroundTransparency = 1
+                text.TextColor3 = Color3.fromRGB(0, 255, 0)
+                text.TextStrokeTransparency = 0.5
+                text.Font = Enum.Font.GothamBold
+                text.TextSize = 18
+                text.Parent = billboard
+
+                -- Update health text every frame
+                local conn
+                conn = RunService.Heartbeat:Connect(function()
+                    if not plr.Character or not plr.Character:FindFirstChild("Humanoid") then
+                        conn:Disconnect()
+                        if billboard then
+                            billboard:Destroy()
+                        end
+                        return
+                    end
+                    local hp = plr.Character.Humanoid.Health
+                    local maxHp = plr.Character.Humanoid.MaxHealth
+                    text.Text = string.format("HP: %d / %d", math.floor(hp), maxHp)
+                end)
+            end
+        end
+    end
+
+    local function toggleHealthESP(state)
+        if state then
+            for _, plr in pairs(Players:GetPlayers()) do
+                if plr ~= player then
+                    createHealthBillboard(plr)
+                end
+            end
+        else
+            for _, plr in pairs(Players:GetPlayers()) do
+                if plr.Character then
+                    local billboard = plr.Character:FindFirstChild("HealthBillboard")
+                    if billboard then
+                        billboard:Destroy()
+                    end
+                end
+            end
+        end
+    end
+
+    --// Add buttons to Visuals page
+    local visualsPage = pages["Visuals"]
+
+    local function createToggleButton(name, posY)
+        local btn = Instance.new("TextButton")
+        btn.Name = name.."Button"
+        btn.Text = name:gsub("ESP", "").." (Enable)"
+        btn.Size = UDim2.new(0, 180, 0, 40)
+        btn.Position = UDim2.new(0, 20, 0, posY)
+        btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        btn.TextColor3 = Color3.fromRGB(140, 0, 0) -- dark red
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 18
+        btn.BorderSizePixel = 0
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 10)
+        corner.Parent = btn
+
+        btn.Parent = visualsPage
+
+        local enabled = false
+
+        btn.MouseEnter:Connect(function()
+            if not enabled then
+                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+            end
+        end)
+        btn.MouseLeave:Connect(function()
+            if not enabled then
+                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 20, 20)}):Play()
+            end
+        end)
+
+        btn.MouseButton1Click:Connect(function()
+            enabled = not enabled
+            espSettings[name] = enabled
+            if enabled then
+                btn.Text = name:gsub("ESP", "").." (Disable)"
+                btn.BackgroundColor3 = Color3.fromRGB(150, 30, 30) -- red
+                -- toggle ESP function
+                if name == "HighlightESP" then
+                    toggleHighlightESP(true)
+                elseif name == "HealthESP" then
+                    toggleHealthESP(true)
+                end
+            else
+                btn.Text = name:gsub("ESP", "").." (Enable)"
+                btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- normal bg
+                -- toggle ESP off
+                if name == "HighlightESP" then
+                    toggleHighlightESP(false)
+                elseif name == "HealthESP" then
+                    toggleHealthESP(false)
+                end
+            end
+        end)
+    end
+
+    createToggleButton("HighlightESP", 30)
+    createToggleButton("HealthESP", 85)
+
+    --// Keybind to toggle GUI visibility (Insert)
+    local guiVisible = true
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if input.KeyCode == Enum.KeyCode.Insert then
+            guiVisible = not guiVisible
+            gui.Enabled = guiVisible
+        end
     end)
 end
 
--- Show first tab by default and highlight
-pages["Aimbot"].Visible = true
-local firstTab = tabButtons:FindFirstChild("AimbotTab")
-if firstTab then
-    TweenService:Create(firstTab, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 120, 200)}):Play()
-end
-
--- Insert Key Toggle for GUI visibility
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.Insert then
-        guiVisible = not guiVisible
-        gui.Enabled = guiVisible
-    end
-end)
-
--- Submit button logic
-submitBtn.MouseButton1Click:Connect(function()
-    if keyBox.Text == correctKey then
-        unlocked = true
-        keyFrame.Visible = false
-        main.Visible = true
-    else
-        keyBox.Text = ""
-        keyBox.PlaceholderText = "Incorrect key!"
-        TweenService:Create(keyBox, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(255, 0, 0)}):Play()
-        wait(1)
-        keyBox.TextColor3 = Color3.fromRGB(200, 0, 0)
-    end
-end)
+--// Script starts here: wait for key access first
