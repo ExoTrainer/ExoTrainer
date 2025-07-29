@@ -1,0 +1,187 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+-- Remove existing GUI if present
+if player.PlayerGui:FindFirstChild("ExoTrainer") then
+    player.PlayerGui.ExoTrainer:Destroy()
+end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "ExoTrainer"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Main Frame
+local main = Instance.new("Frame")
+main.Name = "MainFrame"
+main.Size = UDim2.new(0, 700, 0, 800)
+main.Position = UDim2.new(0, 20, 0, 20)
+main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+main.BackgroundTransparency = 0.15
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+main.Parent = gui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 15)
+mainCorner.Parent = main
+
+local mainShadow = Instance.new("UIStroke")
+mainShadow.Color = Color3.fromRGB(0, 0, 0)
+mainShadow.Thickness = 2
+mainShadow.Transparency = 0.7
+mainShadow.Parent = main
+
+-- TopBar Frame (Title + Close)
+local topBar = Instance.new("Frame")
+topBar.Name = "TopBar"
+topBar.Size = UDim2.new(1, 0, 0, 40)
+topBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+topBar.BackgroundTransparency = 0.1
+topBar.BorderSizePixel = 0
+topBar.Parent = main
+
+local topBarCorner = Instance.new("UICorner")
+topBarCorner.CornerRadius = UDim.new(0, 15)
+topBarCorner.Parent = topBar
+
+-- Title Label
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.Text = "ExoTrainer"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 24
+title.TextColor3 = Color3.new(1, 1, 1)
+title.BackgroundTransparency = 1
+title.Size = UDim2.new(1, -100, 1, 0)
+title.Position = UDim2.new(0, 20, 0, 0)
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = topBar
+
+-- Close Button
+local closeBtn = Instance.new("TextButton")
+closeBtn.Name = "CloseButton"
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 24
+closeBtn.TextColor3 = Color3.fromRGB(220, 60, 60)
+closeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+closeBtn.BorderSizePixel = 0
+closeBtn.Size = UDim2.new(0, 60, 1, 0)
+closeBtn.Position = UDim2.new(1, -80, 0, 0)
+closeBtn.Parent = topBar
+
+local closeBtnCorner = Instance.new("UICorner")
+closeBtnCorner.CornerRadius = UDim.new(0, 10)
+closeBtnCorner.Parent = closeBtn
+
+-- Close button hover tween
+closeBtn.MouseEnter:Connect(function()
+    TweenService:Create(closeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(220, 80, 80)}):Play()
+end)
+closeBtn.MouseLeave:Connect(function()
+    TweenService:Create(closeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
+
+-- Tab Buttons Frame
+local tabButtons = Instance.new("Frame")
+tabButtons.Name = "TabButtons"
+tabButtons.Size = UDim2.new(1, 0, 0, 40)
+tabButtons.Position = UDim2.new(0, 0, 0, 40)
+tabButtons.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+tabButtons.BackgroundTransparency = 0.1
+tabButtons.BorderSizePixel = 0
+tabButtons.Parent = main
+
+local tabButtonsCorner = Instance.new("UICorner")
+tabButtonsCorner.CornerRadius = UDim.new(0, 15)
+tabButtonsCorner.Parent = tabButtons
+
+local tabs = {"Aimbot", "Visuals", "Rage", "Players", "Other"}
+local pages = {}
+
+local function styleButton(button)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = button
+
+    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    button.TextColor3 = Color3.new(1,1,1)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 18
+    button.BorderSizePixel = 0
+
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 120, 200)}):Play()
+    end)
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+    end)
+end
+
+-- Create tab buttons & pages
+for i, tabName in ipairs(tabs) do
+    local tabBtn = Instance.new("TextButton")
+    tabBtn.Name = tabName .. "Tab"
+    tabBtn.Text = tabName
+    tabBtn.Size = UDim2.new(0, 130, 1, 0)
+    tabBtn.Position = UDim2.new(0, (i-1) * 130, 0, 0)
+    tabBtn.Parent = tabButtons
+
+    styleButton(tabBtn)
+
+    -- Create the page frame for each tab
+    local page = Instance.new("Frame")
+    page.Name = tabName .. "Page"
+    page.Size = UDim2.new(1, 0, 1, -80) -- under topBar+tabButtons (40+40)
+    page.Position = UDim2.new(0, 0, 0, 80)
+    page.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+    page.BackgroundTransparency = 0.1
+    page.BorderSizePixel = 0
+    page.Visible = false
+    page.Parent = main
+
+    local pageCorner = Instance.new("UICorner")
+    pageCorner.CornerRadius = UDim.new(0, 15)
+    pageCorner.Parent = page
+
+    pages[tabName] = page
+
+    tabBtn.MouseButton1Click:Connect(function()
+        for _, p in pairs(pages) do
+            p.Visible = false
+        end
+        page.Visible = true
+
+        for _, btn in pairs(tabButtons:GetChildren()) do
+            if btn:IsA("TextButton") then
+                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+            end
+        end
+        TweenService:Create(tabBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 120, 200)}):Play()
+    end)
+end
+
+-- Show first tab by default and highlight
+pages["Aimbot"].Visible = true
+local firstTab = tabButtons:FindFirstChild("AimbotTab")
+if firstTab then
+    TweenService:Create(firstTab, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 120, 200)}):Play()
+end
+
+-- Insert Key Toggle for GUI visibility
+local guiVisible = true
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.Insert then
+        guiVisible = not guiVisible
+        gui.Enabled = guiVisible
+    end
+end)
