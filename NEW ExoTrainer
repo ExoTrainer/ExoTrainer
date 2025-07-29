@@ -428,7 +428,32 @@ function loadMainGUI()
 
     createToggleButton("HighlightESP", 30)
     createToggleButton("HealthESP", 85)
+-- Automatically apply ESP on new players or respawn
+Players.PlayerAdded:Connect(function(plr)
+    plr.CharacterAdded:Connect(function()
+        task.wait(1)
+        if espSettings.HighlightESP then
+            toggleHighlightESP(true)
+        end
+        if espSettings.HealthESP then
+            createHealthBillboard(plr)
+        end
+    end)
+end)
 
+for _, plr in pairs(Players:GetPlayers()) do
+    if plr ~= player then
+        plr.CharacterAdded:Connect(function()
+            task.wait(1)
+            if espSettings.HighlightESP then
+                toggleHighlightESP(true)
+            end
+            if espSettings.HealthESP then
+                createHealthBillboard(plr)
+            end
+        end)
+    end
+end
     --// Keybind to toggle GUI visibility (Insert)
     local guiVisible = true
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
