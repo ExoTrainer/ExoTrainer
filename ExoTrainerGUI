@@ -1,16 +1,15 @@
--- ExoTrainer Loader with Key System
-local KEY = "90120" -- The access key
+local KEY = "90120" -- Your key here
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local Lighting = game:GetService("Lighting")
 
--- Clean up any old GUI
+-- Remove old UI if exists
 if game.CoreGui:FindFirstChild("ExoTrainerKeyUI") then
     game.CoreGui.ExoTrainerKeyUI:Destroy()
 end
 
--- Create ScreenGui
+-- Create GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ExoTrainerKeyUI"
 screenGui.ResetOnSpawn = false
@@ -21,7 +20,7 @@ local blur = Instance.new("BlurEffect")
 blur.Size = 24
 blur.Parent = Lighting
 
--- Create main frame
+-- Main frame
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 320, 0, 170)
 frame.Position = UDim2.new(0.5, -160, 0.5, -85)
@@ -34,7 +33,7 @@ local uicorner = Instance.new("UICorner")
 uicorner.CornerRadius = UDim.new(0, 12)
 uicorner.Parent = frame
 
--- Title label
+-- Title
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 45)
 title.BackgroundTransparency = 1
@@ -44,7 +43,7 @@ title.Font = Enum.Font.GothamBold
 title.TextSize = 20
 title.Parent = frame
 
--- TextBox for input
+-- Input box
 local inputBox = Instance.new("TextBox")
 inputBox.Size = UDim2.new(0.8, 0, 0, 40)
 inputBox.Position = UDim2.new(0.1, 0, 0.4, 0)
@@ -60,7 +59,7 @@ local inputCorner = Instance.new("UICorner")
 inputCorner.CornerRadius = UDim.new(0, 8)
 inputCorner.Parent = inputBox
 
--- Status label (for errors)
+-- Status label
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, 0, 0, 25)
 statusLabel.Position = UDim2.new(0, 0, 0.75, 0)
@@ -87,19 +86,18 @@ local submitCorner = Instance.new("UICorner")
 submitCorner.CornerRadius = UDim.new(0, 10)
 submitCorner.Parent = submitButton
 
--- URL of your GitHub raw script
+-- Your external trainer raw URL
 local trainerScriptURL = "https://raw.githubusercontent.com/ExoTrainer/ExoTrainer/main/ExoTrainerGUI"
 
--- Function to load trainer
 local function loadTrainer()
-    print("[ExoTrainer] Loading trainer script...")
+    print("[ExoTrainer] Downloading trainer script...")
     local success, response = pcall(function()
         return game:HttpGet(trainerScriptURL)
     end)
 
     if not success or not response or response == "" then
         statusLabel.Text = "❌ Failed to download trainer script."
-        print("[ExoTrainer] Failed to download trainer script.")
+        print("[ExoTrainer] Download failed or empty script.")
         return
     end
 
@@ -109,17 +107,16 @@ local function loadTrainer()
 
     if not loadSuccess then
         statusLabel.Text = "❌ Failed to execute trainer script."
-        warn("[ExoTrainer] Failed to execute trainer script:", err)
+        warn("[ExoTrainer] Error executing script:", err)
     else
         print("[ExoTrainer] Trainer loaded successfully.")
     end
 end
 
--- Submit button click handler
 submitButton.MouseButton1Click:Connect(function()
-    local enteredKey = inputBox.Text
-    print("[ExoTrainer] Key entered:", enteredKey)
-
+    local enteredKey = inputBox.Text:gsub("%s", "") -- trim spaces
+    print("[ExoTrainer] Key entered:", "'"..enteredKey.."'")
+    print("[ExoTrainer] Correct key:", "'"..KEY.."'")
     if enteredKey == KEY then
         statusLabel.Text = "✅ Key accepted! Loading trainer..."
         wait(0.5)
@@ -131,7 +128,6 @@ submitButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Optional: allow pressing Enter to submit
 inputBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         submitButton.MouseButton1Click:Fire()
