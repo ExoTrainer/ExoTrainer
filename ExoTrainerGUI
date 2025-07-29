@@ -1,18 +1,17 @@
 -- ExoTrainer with Key System
 local KEY = "90120" -- Change this to any key you want
 
--- UI Setup
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+local Lighting = game:GetService("Lighting")
+
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "ExoTrainerLoader"
 gui.ResetOnSpawn = false
 
--- Blur effect during key prompt
-local blur = Instance.new("BlurEffect", game:GetService("Lighting"))
+local blur = Instance.new("BlurEffect", Lighting)
 blur.Size = 24
 
--- Key Frame
 local keyFrame = Instance.new("Frame", gui)
 keyFrame.Size = UDim2.new(0, 300, 0, 150)
 keyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
@@ -23,7 +22,6 @@ keyFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 local uiCorner = Instance.new("UICorner", keyFrame)
 uiCorner.CornerRadius = UDim.new(0, 10)
 
--- Title
 local title = Instance.new("TextLabel", keyFrame)
 title.Size = UDim2.new(1, 0, 0, 40)
 title.BackgroundTransparency = 1
@@ -32,7 +30,6 @@ title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
 
--- TextBox
 local inputBox = Instance.new("TextBox", keyFrame)
 inputBox.Size = UDim2.new(0.8, 0, 0, 35)
 inputBox.Position = UDim2.new(0.5, 0, 0.5, -10)
@@ -47,7 +44,6 @@ inputBox.TextSize = 16
 local boxCorner = Instance.new("UICorner", inputBox)
 boxCorner.CornerRadius = UDim.new(0, 8)
 
--- Submit Button
 local submit = Instance.new("TextButton", keyFrame)
 submit.Size = UDim2.new(0.8, 0, 0, 30)
 submit.Position = UDim2.new(0.5, 0, 1, -40)
@@ -61,7 +57,6 @@ submit.TextSize = 16
 local submitCorner = Instance.new("UICorner", submit)
 submitCorner.CornerRadius = UDim.new(0, 6)
 
--- Error Message
 local errorMsg = Instance.new("TextLabel", keyFrame)
 errorMsg.Size = UDim2.new(1, 0, 0, 20)
 errorMsg.Position = UDim2.new(0, 0, 1, -20)
@@ -71,15 +66,31 @@ errorMsg.TextColor3 = Color3.fromRGB(255, 75, 75)
 errorMsg.Font = Enum.Font.Gotham
 errorMsg.TextSize = 14
 
--- Logic
-submit.MouseButton1Click:Connect(function()
-	if inputBox.Text == KEY then
-		gui:Destroy()
-		blur:Destroy()
+local function loadTrainer()
+    local rawURL = "https://raw.githubusercontent.com/ExoTrainer/ExoTrainer/main/ExoTrainerGUI"
+    local success, result = pcall(function()
+        return game:HttpGet(rawURL)
+    end)
+    if success and result then
+        local funcSuccess, funcError = pcall(function()
+            loadstring(result)()
+        end)
+        if not funcSuccess then
+            errorMsg.Text = "❌ Failed to run trainer script: "..tostring(funcError)
+        end
+    else
+        errorMsg.Text = "❌ Failed to load trainer script from URL."
+    end
+end
 
-		-- Load the actual GUI (replace the link below with your GitHub raw link)
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/ExoTrainer/ExoTrainer/main/ExoTrainerGUI"))()
-	else
-		errorMsg.Text = "❌ Invalid key. Try again."
-	end
+submit.MouseButton1Click:Connect(function()
+    if inputBox.Text == KEY then
+        errorMsg.Text = ""
+        gui:Destroy()
+        blur:Destroy()
+        wait(0.2) -- short wait to ensure UI cleanup
+        loadTrainer()
+    else
+        errorMsg.Text = "❌ Invalid key. Try again."
+    end
 end)
