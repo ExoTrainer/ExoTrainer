@@ -23,7 +23,7 @@ keyGui.Parent = player:WaitForChild("PlayerGui")
 
 local keyFrame = Instance.new("Frame")
 keyFrame.Size = UDim2.new(0, 350, 0, 150)
-keyFrame.Position = UDim2.new(0.5, -175, 0.5, -75)
+keyFrame.Position = UDim2.new(0, 20, 0, 20)
 keyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 keyFrame.BorderSizePixel = 0
 keyFrame.Parent = keyGui
